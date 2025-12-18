@@ -1,0 +1,90 @@
+name: ci
+
+on:
+    # Rulesets for main branch
+    # - Require status checks to pass -> Require branches to be up to date before merging
+    pull_request:
+        # Note: 'labeled'/'unlabeled' triggers create parallel workflow runs when multiple labels change.
+        # Ensure CI pipeline is idempotent and supports parallel execution or uses concurrency controls
+        # in GitHub Actions to prevent conflicts from simultaneous multi-label trigger events.
+        types: [labeled, unlabeled, opened, synchronize, reopened]
+
+permissions:
+    contents: write
+
+jobs:
+    # ====================================================
+    # Versioning and Release
+    # ====================================================
+    check-pre-release:
+        name: check-pre-release
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@v0
+        with:
+            target_label: "pre-release"
+            branch_prefix: "release/"
+
+    zerv-versioning:
+        name: zerv-versioning
+        needs: check-pre-release
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0
+        with:
+            schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
+
+    # Note: Consider softprops/action-gh-release as a step if you want both tag and release in one job
+    tag-pre-release:
+        name: tag-pre-release
+        needs: [zerv-versioning, check-pre-release]
+        if: needs.check-pre-release.outputs.is_valid == 'true'
+        uses: wislertt/zerv/.github/workflows/shared-create-tags.yml@v0
+        with:
+            tags: '["${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver }}"]'
+
+    # ====================================================
+    # Test and Lint
+    # ====================================================
+    test:
+        uses: ./.github/workflows/test.yml
+        secrets:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    pre-commit:
+        uses: ./.github/workflows/pre-commit.yml
+
+    # ====================================================
+    # Deployment with environment
+    # ====================================================
+    check-deploy-env-labels:
+        name: check-deploy-env-labels
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-labels-with-prefix.yml@v0
+        with:
+            prefix: "deploy-"
+
+    deploy-all-env:
+        needs: [zerv-versioning, check-deploy-env-labels]
+        uses: ./.github/workflows/deploy-all-env.yml
+        with:
+            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
+            deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
+            lock_key_owner: ${{ github.ref }}
+            unlock_after_deploy: false
+
+    # ====================================================
+    # Deployment without environment
+    # ====================================================
+    check-deploy-no-env-label:
+        name: check-deploy-no-env-label
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@v0
+        with:
+            target_label: "deploy"
+
+    deploy-no-env:
+        needs: [zerv-versioning, check-deploy-no-env-label]
+        if: needs.check-deploy-no-env-label.outputs.has_label == 'true'
+        uses: ./.github/workflows/deploy-no-env.yml
+        with:
+            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}

@@ -1,0 +1,46 @@
+name: deploy-all-env
+
+on:
+    workflow_call:
+        inputs:
+            semver:
+                required: true
+                type: string
+            pep440:
+                required: true
+                type: string
+            docker_tag:
+                required: true
+                type: string
+            deploy_labels:
+                required: false
+                type: string
+                description: "JSON object with deploy labels from check-pr-labels-with-prefix"
+                default: "{}"
+            lock_key_owner:
+                description: "Key owner for environment lock"
+                required: true
+                type: string
+            unlock_after_deploy:
+                required: true
+                type: boolean
+
+permissions:
+    contents: write
+
+jobs:
+    deploy:
+        strategy:
+            fail-fast: false
+            matrix:
+                env: [d, n, p]
+        uses: ./.github/workflows/deploy-env.yml
+        with:
+            env: ${{ matrix.env }}
+            semver: ${{ inputs.semver }}
+            pep440: ${{ inputs.pep440 }}
+            docker_tag: ${{ inputs.docker_tag }}
+            deploy_labels: ${{ inputs.deploy_labels }}
+            lock_key: ${{ matrix.env }}
+            lock_key_owner: ${{ inputs.lock_key_owner }}
+            unlock_after_deploy: ${{ inputs.unlock_after_deploy }}

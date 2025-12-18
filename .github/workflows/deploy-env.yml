@@ -1,0 +1,65 @@
+name: deploy-env
+
+on:
+    workflow_call:
+        inputs:
+            env:
+                required: true
+                type: string
+            semver:
+                required: true
+                type: string
+            pep440:
+                required: true
+                type: string
+            docker_tag:
+                required: true
+                type: string
+            deploy_labels:
+                required: false
+                type: string
+                description: "JSON object with deploy labels from check-pr-labels-with-prefix"
+                default: "{}"
+            lock_key:
+                description: "Key for environment lock"
+                required: true
+                type: string
+            lock_key_owner:
+                description: "Key owner for environment lock"
+                required: true
+                type: string
+            unlock_after_deploy:
+                required: true
+                type: boolean
+
+jobs:
+    lock:
+        name: lock-${{ inputs.lock_key }}
+        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
+        uses: wislertt/zerv/.github/workflows/shared-lock.yml@v0
+        with:
+            key: ${{ inputs.lock_key }}
+            key_owner: ${{ inputs.lock_key_owner }}
+            job_name: lock-${{ inputs.lock_key }}
+
+    deploy:
+        name: deploy-${{ inputs.env }}
+        needs: lock
+        runs-on: ubuntu-latest
+        steps:
+            - name: Dummy deploy with environment
+              run: |
+                  echo "Deploying to environment: ${{ inputs.env }}"
+                  echo "Semver: ${{ inputs.semver }}"
+                  echo "PEP440: ${{ inputs.pep440 }}"
+                  echo "Docker Tag: ${{ inputs.docker_tag }}"
+
+    unlock:
+        name: unlock-${{ inputs.lock_key }}
+        uses: wislertt/zerv/.github/workflows/shared-unlock.yml@v0
+        needs: [lock, deploy]
+        if: always() && inputs.unlock_after_deploy == true && needs.lock.result != 'skipped'
+        with:
+            key: ${{ inputs.lock_key }}
+            key_owner: ${{ inputs.lock_key_owner }}
+            job_name: unlock-${{ inputs.lock_key }}
