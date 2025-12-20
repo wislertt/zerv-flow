@@ -86,13 +86,13 @@ A demonstration of [**zerv**](https://github.com/wislertt/zerv) in action. Shows
 The following scenarios demonstrate how the deployment flow works in practice:
 
 - **Initial State**: Only the main branch exists. All environments (development, nonproduction, production) and environment-less deployments reference version `v1.1.2` from the main branch.
-  ![Initial Deployment State](.github/docs/assets/deployment-flow-1.excalidraw.svg)
+  ![Initial Deployment State](https://raw.githubusercontent.com/wislertt/zerv-flow/dev/.github/docs/assets/deployment-flow-1.excalidraw.svg)
 
 - **Feature Branch Deployment**: A `feature/1` branch is created with PR labels `deploy-n` and `deploy`. The nonproduction environment deploys version `v1.1.3-alpha.1.post.2` from the feature branch and becomes locked to it. Development and production remain on main branch `v1.1.2`. The environment-less deployment creates a new version `v1.1.3-alpha.1.post.2` without overriding previous versions.
-  ![Feature Branch Deployment](.github/docs/assets/deployment-flow-2.excalidraw.svg)
+  ![Feature Branch Deployment](https://raw.githubusercontent.com/wislertt/zerv-flow/dev/.github/docs/assets/deployment-flow-2.excalidraw.svg)
 
 - **Concurrent Feature Deployment**: While `feature/1` PR is active, a `feature/2` branch is created with PR labels `deploy-d`, `deploy-n`, and `deploy`. Nonproduction deployment fails due to being locked by `feature/1`. Development deploys successfully with version `v1.1.3-alpha.2.post3` from `feature/2`. Environment-less deployment creates another new version `v1.1.3-alpha.2.post.3` alongside the existing version.
-  ![Concurrent Feature Deployment](.github/docs/assets/deployment-flow-3.excalidraw.svg)
+  ![Concurrent Feature Deployment](https://raw.githubusercontent.com/wislertt/zerv-flow/dev/.github/docs/assets/deployment-flow-3.excalidraw.svg)
 
 ## Branch Rules and Version Generation (Configurable)
 
