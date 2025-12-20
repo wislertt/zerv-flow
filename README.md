@@ -2,11 +2,12 @@
 [![release](https://img.shields.io/github/actions/workflow/status/wislertt/zerv-flow/cd.yml?branch=main&label=release&logo=github)](https://github.com/wislertt/zerv-flow/actions/workflows/cd.yml)
 [![quality gate status](https://sonarcloud.io/api/project_badges/measure?project=wislertt_zerv-flow&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wislertt_zerv-flow)
 [![security rating](https://sonarcloud.io/api/project_badges/measure?project=wislertt_zerv-flow&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=wislertt_zerv-flow)
-[![vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=wislertt_zerv-flow&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=wislertt_zerv-flow)[![codecov](https://img.shields.io/codecov/c/github/wislertt/zerv-flow?label=codecov&logo=codecov)](https://codecov.io/gh/wislertt/zerv-flow)
+[![vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=wislertt_zerv-flow&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=wislertt_zerv-flow)
+[![codecov](https://img.shields.io/codecov/c/github/wislertt/zerv-flow?label=codecov&logo=codecov)](https://codecov.io/gh/wislertt/zerv-flow)
 
 # zerv flow
 
-This repository demonstrates a complete CI/CD solution for multi-environment deployments, integrating the [**zerv**](https://github.com/wislertt/zerv) versioning tool with GitHub Actions for automated versioning and release workflows.
+A demonstration of [**zerv**](https://github.com/wislertt/zerv) in action. Shows how to implement automated versioning for CI/CD pipelines, generating multiple formats (semver, PEP440, Docker tags) with flexible branching strategy framework.
 
 ## Overview
 
@@ -29,7 +30,7 @@ This repository demonstrates a complete CI/CD solution for multi-environment dep
 1. Fork this repository
 2. Install zerv locally for testing
 3. Create a PR to test the workflow
-4. Add `deploy-d`, `deploy-n`, or `deploy` labels to trigger deployments
+4. Add `deploy-d`, `deploy-n`, `deploy` and `pre-release` labels
 
 ## Prerequisites
 
@@ -49,6 +50,11 @@ This repository demonstrates a complete CI/CD solution for multi-environment dep
 - **Version formats**: This repository demonstrates 3 formats: - Semver: For git repository tags and releases - PEP440: For Python package versions - Docker Tag: For container registry tags
     - Note: This demo repository only echoes these formats as examples, but in a real deployment pipeline they would be used for their respective purposes.
     - Note: Configure zerv to generate formats based on your deployment requirements and constraints. See [zerv documentation](https://github.com/wislertt/zerv) for all supported formats.
+- **Deployment triggers**: Uses PR labels with configurable prefixes:
+    - `deploy-` prefix for environment-specific deployments (e.g., `deploy-d`, `deploy-n`)
+    - `deploy` for environment-less deployments (e.g., immutable releases)
+    - `pre-release` for creating release candidates with tagging
+    - These label prefixes can be configured to match your deployment naming conventions
 
 ## Branching Strategy Design
 
@@ -90,7 +96,7 @@ The following scenarios demonstrate how the deployment flow works in practice:
 
 ## Branch Rules and Version Generation (Configurable)
 
-This repository uses the default branch rules from `zerv flow` command. For complete implementation details, see the shared workflow at [zerv/.github/workflows/shared-zerv-versioning.yml](https://github.com/wislertt/zerv/blob/main/.github/workflows/shared-zerv-versioning.yml).
+This repository uses the default branch rules from `zerv flow` command. For complete implementation details, see the [shared workflow](https://github.com/wislertt/zerv/blob/main/.github/workflows/shared-zerv-versioning.yml).
 
 - **Feature branches** (default): Generate alpha pre-releases with branch-based identification
     - Numbered feature branches (`feature/1/xyz`): Extracts number from branch name
