@@ -80,8 +80,6 @@ jobs:
         uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@v0
         with:
             target_label: "deploy"
-            branch_prefixes: "[]"
-            branch_names: "[]"
 
     deploy-no-env:
         needs: [zerv-versioning, check-deploy-no-env-label]
