@@ -21,8 +21,8 @@ jobs:
         uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@develop/update-gh-workflow
         with:
             target_label: "pre-release"
-            # branch_prefix: "release/"
-            branch_prefixes: '["release/"]'
+            # branch_prefixes: '["release/"]'
+            branch_prefixes: '["renovate/"]'
 
     zerv-versioning:
         name: zerv-versioning
