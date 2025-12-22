@@ -18,7 +18,7 @@ jobs:
     # ====================================================
     check-pre-release:
         name: check-pre-release
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@develop/update-gh-workflow
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@d618649915daec135e5a461f89acd8447a13a927
         with:
             target_label: "pre-release"
             branch_prefixes: '["release/"]'
