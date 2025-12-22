@@ -21,8 +21,8 @@ jobs:
         uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@develop/update-gh-workflow
         with:
             target_label: "pre-release"
-            # branch_prefixes: '["release/"]'
-            branch_prefixes: '["renovate/"]'
+            # branch_prefixes: '["renovate/"]'
+            branch_names: '["renovate/axum-monorepo"]'
 
     zerv-versioning:
         name: zerv-versioning
