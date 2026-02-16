@@ -3,6 +3,10 @@
 # dependencies = [
 #     "bakefile[lib]>=0.0.26",
 # ]
+#
+# # Debug with local bakefile in editable mode
+# # [tool.uv.sources]
+# # bakefile = { path = "../bakefile", editable = true }
 # ///
 
 from bake import command
@@ -10,18 +14,6 @@ from bakelib import RustSpace
 
 
 class MyBakebook(RustSpace):
-    def update(self) -> None:
-        super().update()
-        # TODO: move to bakefile
-        self.ctx.run("bakefile lock --upgrade")
-        self.ctx.run("bakefile sync")
-
-    def lint(self) -> None:
-        super().lint()
-        # TODO: move to bakefile
-        self.ctx.run("bakefile lint")
-        self.ctx.run("cargo sort")
-
     def test(self) -> None:
         env: dict[str, str] = {}
         env["RUST_LOG"] = "cargo_tarpaulin=off"

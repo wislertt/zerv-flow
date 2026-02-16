@@ -25,7 +25,7 @@ wheels = [
 
 [[package]]
 name = "bakefile"
-version = "0.0.26"
+version = "0.0.27"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautysh" },
@@ -42,9 +42,9 @@ dependencies = [
     { name = "typer" },
     { name = "uv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/59/6c/0c4629bf9904f6e76c4dcf885998936bbee60797dd32bd9f1c1aee2fa08e/bakefile-0.0.26.tar.gz", hash = "sha256:64d940adb298c1266455574c35deb67d2382f5b7a8448ca68874e007f8c3cc96", size = 49274, upload-time = "2026-02-15T10:05:12.185Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/54/ba9049112299217da75fbd2bd2f2fb91b46bb2f43ef22d71f479caf774da/bakefile-0.0.27.tar.gz", hash = "sha256:02c7a57151ed0d03428e90d097631b1e33a825556f050e3ef468beee8a5fb5ab", size = 49313, upload-time = "2026-02-16T09:59:39.474Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/8f/61ecba81f9d1fab51e526caae59e80d5739a1bbcbc5b5239d7eb709cac9f/bakefile-0.0.26-py3-none-any.whl", hash = "sha256:e3b0c08929ad67d4543037bb954a7f411f298eebdd378a042e43ab5dba82ac43", size = 73097, upload-time = "2026-02-15T10:05:13.567Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/e2/43f6122cc644fe916d613689c26f3dc8361409f5dfe4457d6e846af1aca5/bakefile-0.0.27-py3-none-any.whl", hash = "sha256:58af05bd4a5a8399bddecdc606d282fc666569da268957267c9b3ab60adf1d96", size = 73160, upload-time = "2026-02-16T09:59:38.393Z" },
 ]
 
 [package.optional-dependencies]
