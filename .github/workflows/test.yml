@@ -8,58 +8,103 @@ on:
             CODECOV_TOKEN:
                 required: true
 
+env:
+    CARGO_CACHE_PATHS: |
+        ~/.cargo/bin/
+        ~/.cargo/registry/index/
+        ~/.cargo/registry/cache/
+        ~/.cargo/git/db/
+        ${{ github.workspace }}/target/
+
 jobs:
     test:
-        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        runs-on: ${{ matrix.os }}
+        env:
+            PYTHON_VERSION: "3.14"
         steps:
-            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+            - name: checkout-repository
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   fetch-depth: 0
 
-            - uses: dtolnay/rust-toolchain@f7ccc83f9ed1e5b9c81d8a67d7ad1a747e22a561 # stable
-              with:
-                  toolchain: stable
+            - name: set-python-version
+              run: echo "${{ env.PYTHON_VERSION }}" > .python-version
 
-            - name: Production build check
-              run: cargo build --verbose
+            - name: setup-mise
+              uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
 
-            - name: Restore cache
+            - name: verify-rust-toolchain
+              # Workaround for Windows rustup bug: https://github.com/rust-lang/rustup/issues/3104
+              shell: bash
+              run: |
+                  if ! cargo --version &>/dev/null; then
+                    TOOLCHAIN=$(rustup show active-toolchain | head -1 | cut -d' ' -f1)
+                    rustup toolchain uninstall "$TOOLCHAIN" || true
+                    rustup toolchain install "$TOOLCHAIN" --no-self-update
+                  fi
+                  cargo --version
+
+            - name: restore-cache-cargo
+              id: restore-cache-cargo
+              env:
+                  CACHE_KEY_PREFIX: cargo-${{ github.workflow }}-${{ github.job }}-${{ runner.os }}
               uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
               with:
-                  path: |
-                      ~/.cargo/bin/
-                      ~/.cargo/registry/index/
-                      ~/.cargo/registry/cache/
-                      ~/.cargo/git/db/
-                  key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}-${{ github.run_id }}
+                  path: ${{ env.CARGO_CACHE_PATHS }}
+                  key: ${{ env.CACHE_KEY_PREFIX }}-${{ hashFiles('**/Cargo.lock') }}-${{ github.run_id }}-${{ github.run_attempt }}
                   restore-keys: |
-                      cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
-                      cargo-${{ runner.os }}-
+                      ${{ env.CACHE_KEY_PREFIX }}-${{ hashFiles('**/Cargo.lock') }}-
+                      ${{ env.CACHE_KEY_PREFIX }}-
 
-            - run: cargo install cargo-tarpaulin --locked || true
-
-            - run: make test
-              shell: bash
-
-            - name: Save cache
-              uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-              if: always()
+            - name: cache-venv
+              env:
+                  CACHE_KEY_PREFIX: venv-${{ github.workflow }}-${{ github.job }}-${{ runner.os }}-py${{ env.PYTHON_VERSION }}
+                  CACHE_KEY_DEPS: ${{ hashFiles('uv.lock') }}
+              uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
               with:
                   path: |
-                      ~/.cargo/bin/
-                      ~/.cargo/registry/index/
-                      ~/.cargo/registry/cache/
-                      ~/.cargo/git/db/
-                  key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}-${{ github.run_id }}
+                      ~/.local/share/uv
+                      ~/.cache/uv
+                      ${{ github.workspace }}/.venv
+                  key: ${{ env.CACHE_KEY_PREFIX }}-${{ env.CACHE_KEY_DEPS }}-${{ github.run_id }}-${{ github.run_attempt }}
+                  restore-keys: |
+                      ${{ env.CACHE_KEY_PREFIX }}-${{ env.CACHE_KEY_DEPS }}-${{ github.run_id }}-
+                      ${{ env.CACHE_KEY_PREFIX }}-${{ env.CACHE_KEY_DEPS }}-
+                      ${{ env.CACHE_KEY_PREFIX }}-
 
-            - name: SonarQube Scan
-              uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
-              env:
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            - name: setup-path
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                      echo "${{ github.workspace }}/.venv/Scripts" >> $GITHUB_PATH
+                  else
+                      echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+                  fi
 
-            - name: Upload coverage reports to Codecov
+            - name: run-tests
+              run: bake test
+
+            - name: save-cache-cargo
+              if: always()
+              uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+              with:
+                  path: ${{ env.CARGO_CACHE_PATHS }}
+                  key: ${{ steps.restore-cache-cargo.outputs.cache-primary-key }}
+
+            - name: upload-coverage-reports-to-codecov
+              if: matrix.os == 'ubuntu-latest'
               uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
               with:
                   fail_ci_if_error: true
                   token: ${{ secrets.CODECOV_TOKEN }}
                   verbose: true
+
+            - name: sonarqube-scan
+              if: matrix.os == 'ubuntu-latest'
+              uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

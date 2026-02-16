@@ -47,7 +47,7 @@ jobs:
         needs: lock
         runs-on: ubuntu-latest
         steps:
-            - name: Dummy deploy with environment
+            - name: dummy-deploy-with-environment
               run: |
                   echo "Deploying to environment: ${{ inputs.env }}"
                   echo "Semver: ${{ inputs.semver }}"
