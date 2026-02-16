@@ -20,6 +20,7 @@ class MyBakebook(RustSpace):
         super().lint()
         # TODO: move to bakefile
         self.ctx.run("bakefile lint")
+        self.ctx.run("cargo sort")
 
     def test(self) -> None:
         env: dict[str, str] = {}
