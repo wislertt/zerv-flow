@@ -35,7 +35,7 @@ mod tests {
     #[tokio::test]
     async fn test_root_endpoint() {
         let app = create_test_app();
-        let server = TestServer::new(app).unwrap();
+        let server = TestServer::new(app);
 
         let response = server.get("/").await;
         response.assert_status(StatusCode::OK);
@@ -48,7 +48,7 @@ mod tests {
     #[tokio::test]
     async fn test_hello_endpoint() {
         let app = create_test_app();
-        let server = TestServer::new(app).unwrap();
+        let server = TestServer::new(app);
 
         let response = server.get("/hello").await;
         response.assert_status(StatusCode::OK);

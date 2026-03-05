@@ -46,7 +46,7 @@ mod tests {
 
         let app_with_trace = app.layer(TraceLayer::new_for_http());
 
-        let server = TestServer::new(app_with_trace).unwrap();
+        let server = TestServer::new(app_with_trace);
 
         let response = server.get("/").await;
         response.assert_status(StatusCode::OK);
