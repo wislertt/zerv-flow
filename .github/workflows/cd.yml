@@ -48,6 +48,9 @@ jobs:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+    pre-commit:
+        uses: ./.github/workflows/pre-commit.yml
+
     # ====================================================
     # Deployment with environment
     # ====================================================
