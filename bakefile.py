@@ -10,10 +10,10 @@
 # ///
 
 from bake import command
-from bakelib import RustSpace
+from bakelib import GitHubActionsTools, RustSpace
 
 
-class MyBakebook(RustSpace):
+class MyBakebook(GitHubActionsTools, RustSpace):
     def test(self) -> None:
         env: dict[str, str] = {}
         env["RUST_LOG"] = "cargo_tarpaulin=off"
