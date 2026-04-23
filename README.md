@@ -94,6 +94,12 @@ The following scenarios demonstrate how the deployment flow works in practice:
 - **Concurrent Feature Deployment**: While `feature/1` PR is active, a `feature/2` branch is created with PR labels `deploy-d`, `deploy-n`, and `deploy`. Nonproduction deployment fails due to being locked by `feature/1`. Development deploys successfully with version `v1.1.3-alpha.2.post3` from `feature/2`. Environment-less deployment creates another new version `v1.1.3-alpha.2.post.3` alongside the existing version.
   ![Concurrent Feature Deployment](https://raw.githubusercontent.com/wislertt/zerv-flow/main/docs/assets/deployment-flow-3.excalidraw.svg)
 
+- **Release to Production**: The `feature/1` PR merges to main, triggering a new release `v1.1.3`. The CD pipeline deploys `v1.1.3` to nonproduction and production. Development remains locked by `feature/2` with version `v1.1.3-alpha.2.post.3`. The environment-less deployment creates a new version `v1.1.3`.
+  ![Release to Production](https://raw.githubusercontent.com/wislertt/zerv-flow/main/docs/assets/deployment-flow-4.excalidraw.svg)
+
+- **Update Feature Branch**: The `feature/2` branch is updated from main (rebase/merge), picking up the new `v1.1.3` tag. Zerv regenerates the version to `v1.1.4-alpha.2.post.4`. Development and nonproduction (both locked by `feature/2`) deploy the updated version. The environment-less deployment creates a new version `v1.1.4-alpha.2.post.4`.
+  ![Update Feature Branch](https://raw.githubusercontent.com/wislertt/zerv-flow/main/docs/assets/deployment-flow-5.excalidraw.svg)
+
 ## Branch Rules and Version Generation (Configurable)
 
 This repository uses the default branch rules from `zerv flow` command. For complete implementation details, see the [shared workflow](https://github.com/wislertt/zerv/blob/main/.github/workflows/shared-zerv-versioning.yml).
@@ -131,7 +137,7 @@ Zerv Flow is designed as a generalized branching framework that builds on top of
     - Simplified release branches: `release/1/feature-name` or `release/feature-name` (no manual version bumping needed)
     - Requirements: Enable "Require branches to be up to date before merging" for main branch protection rule
     - Configuration: Update branch rules if develop branch has different name
-    - Note: This adapts traditional GitFlow (designed 2010, pre-CI/CD) for modern workflows. Even the author now suggests adapting it to your context: [nvie.com](https://nvie.com/posts/a-successful-git-branching-model/)
+    - Note: This adapts traditional [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) (designed 2010, pre-CI/CD) for modern workflows.
 
 - **Release Trains**:
     - Structure: Main + develop as accumulation branch, feature branches from develop, periodic releases
